@@ -26,8 +26,11 @@ export default defineConfig({
   failOnFlakyTests: ci,
   reporter: [
     //['list'],
-    ['html'],
-    //['junit', { outputFile: 'test-results/junit.xml' }],
+    ['html',{
+      outputFile: 'playwright-report',
+      open: 'never'
+    }],
+    ['junit', { outputFile: 'reports/junit.xml' }],
   ],
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
@@ -38,7 +41,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: url.href,
-    headless: false,
+    headless: true,
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
     screenshot: 'only-on-failure',
