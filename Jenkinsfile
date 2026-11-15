@@ -1,34 +1,62 @@
 pipeline {
-  agent {
-      image 'mcr.microsoft.com/playwright:v1.64.1-noble'
-      label 'playwright-windows'
-      args '--ipc=host'
-  }
-  options {
-    skipDefaultCheckout(true)
-    disableConcurrentBuilds()
-    timeout(time: 20, unit: 'MINUTES')
-  }
-  environment {
-    CI = 'true'
-    BASE_URL = 'https://opensource-demo.orangehrmlive.com/web/index.php/'
-    TEST_USERNAME = 'Admin'
-    TEST_PASSWORD = 'admin123'
-  }
-  stages {
-    stage('Checkout') { steps { deleteDir(); checkout scm } }
-    stage('Test') {
-      steps {
-        sh 'npm ci'
-        sh 'npm run typecheck'
-        sh 'xvfb-run -a npx playwright test --project=chromium --project=firefox --project=webkit'
-      }
+    agent {
+        label 'playwright-windows'
     }
-  }
-  post {
-    always {
-      junit testResults: 'test-results/junit.xml', allowEmptyResults: true
-      archiveArtifacts artifacts: 'playwright-report/**,test-results/**', allowEmptyArchive: true
+
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        timeout(time: 90, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
     }
-  }
+
+    triggers {
+        cron('TZ=Asia/Kolkata\n0 6 * * *')
+    }
+
+    environment {
+        CI = 'true'
+        BASE_URL = 'https://opensource-demo.orangehrmlive.com/web/index.php/'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                deleteDir()
+                checkout scm
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                bat 'npm ci'
+            }
+        }
+
+        stage('Install browsers') {
+            steps {
+                bat 'npx playwright install'
+            }
+        }
+
+        stage('Run tests') {
+            steps {
+                bat 'npx playwright test'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts(
+                artifacts: 'playwright-report/*,test-results/,reports/*',
+                allowEmptyArchive: true
+            )
+
+            junit(
+                testResults: 'reports/junit.xml',
+                allowEmptyResults: false
+            )
+        }
+    }
 }
