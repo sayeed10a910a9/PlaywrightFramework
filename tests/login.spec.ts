@@ -45,7 +45,7 @@ test('username is required when password is supplied', async () => {
 test('password is required when username is supplied', async () => {
   await pages.loginPage.login(process.env.TEST_USERNAME!, '');
 
-  await expect(pages.loginPage.invalidCredentials).toHaveCount(1);
+  await expect(pages.loginPage.requiredMessages).toHaveCount(1);
   await expect(pages.loginPage.requiredMessages).toBeVisible();
   await expect(pages.loginPage.password).toBeEmpty();
   await expect(pages.loginPage.heading).toBeVisible();

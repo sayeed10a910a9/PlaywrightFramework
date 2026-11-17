@@ -16,7 +16,7 @@ export const test = base.extend<{ pages: PageManager }>({
 
     await use(pages);
 
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(1000);
   },
 });
 
